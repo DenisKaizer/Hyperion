@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import "./GDR.sol";
+import "./HWT.sol";
 
 contract ReentrancyGuard {
 
