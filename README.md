@@ -4,6 +4,8 @@
 # Hyperion Fund Smart Contracts
 
 # Project descruption 
+Hyperion Token - Сonstruction of solar power stations
+Hyperion Token  is 1 Watt distributed among grid
 
 # Token issuance process walkthrough
 
