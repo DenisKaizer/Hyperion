@@ -46,7 +46,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   uint256 public centRaised;
 
   uint256 public hardCap;
-  
+  uint256 public softCap;
   
   address oracle; //
   address manager;
@@ -83,7 +83,8 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     rate = 12500000000000000; // 0.0125 * 1 ether
     wallet = _wallet;
     token = HWT(_token);
-    hardCap = 1000000000; // inCent
+    hardCap = 1000000000; // in Cents
+    softCap =  500000000; //in Cents
   }
 
   // @return true if the transaction can buy tokens
@@ -108,11 +109,22 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     _;
   }
 
+
   // @return true if crowdsale event has ended
   function hasEnded() public view returns (bool) {
     return now > endTime;
   }
+ 
+ modifier refundAllowed()  {
+    require(centRaised < softCap && now > endTime);
+    _;
+  }
 
+  function refund() public refundAllowed nonReentrant {
+    uint valueToReturn = balances[msg.sender];
+    balances[msg.sender] = 0;
+    msg.sender.transfer(valueToReturn);
+  }
   // Override this method to have a way to add business logic to your crowdsale when buying
   function getTokenAmount(uint256 centValue) internal view returns(uint256) {
     return centValue.mul(rate);
@@ -124,7 +136,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     wallet.transfer(value);
   }
 
-  function finishPreSale() public onlyOwner {
+  function finishCrowdsale() public onlyOwner {
     token.transferOwnership(owner);
     //token.mint();
   }
@@ -135,6 +147,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     oracle = _oracle;
   }
 
+  
   // set manager's address
   function setManager(address _manager) public  onlyOwner {
     require(_manager != address(0));
@@ -145,16 +158,30 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     require(_priceUSD != 0);
     priceUSD = _priceUSD;
   }
-
+  //TODO add checks if its allowed
+  function claimFreezedTokens() public nonReentrant{
+    //TODO add modifier CanClaim
+    //require(CanClaimNow)
+    //uint256 availableTokens = smth;
+    uclaimedTokens[msg.sender] -= availableTokens;
+    token.transfer(msg.sender,availableTokens);
+    
+    
+    
+      
+  }
   // manual selling tokens for fiat
   function manualTransfer(address _to, uint _valueUSD) public saleIsOn isUnderHardCap onlyOwnerOrManager {
     uint256 centValue = _valueUSD * 100;
     uint256 tokensAmount = getTokenAmount(centValue);
     centRaised = centRaised.add(centValue);
-    token.mint(_to, tokensAmount);
+    //75% wiil be freezed 
+    token.mint(_to, tokensAmount.div(4));
+    uclaimedTokens[_to]+= tokensAmount.div(4).mul(3);
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
   }
 
+  
   // low level token purchase function
   function buyTokens(address beneficiary) saleIsOn isUnderHardCap nonReentrant public payable {
     require(beneficiary != address(0) && msg.value != 0);
