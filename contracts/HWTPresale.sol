@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import "./HWT.sol";
+import "./HyperionWattToken.sol";
 
 contract ReentrancyGuard {
 
@@ -29,7 +29,7 @@ contract Presale is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
 
   // The token being sold
-  HWT public token;
+  HyperionFund public token;
 
   // start and end timestamps where investments are allowed (both inclusive)
   uint256 public startTime;
@@ -79,9 +79,9 @@ contract Presale is Ownable, ReentrancyGuard {
     startTime = _startTime;
     endTime = startTime + _period * 1 days;
     priceUSD = _priceUSD;
-    rate = 12500000000000000; // 0.0125 * 1 ether
+    rate = 16666670000000000; // 0.0125 * 1 ether
     wallet = _wallet;
-    token = HWT(_token);
+    token = HyperionFund(_token);
     hardCap = 1000000000; // inCent
   }
 
@@ -156,10 +156,11 @@ contract Presale is Ownable, ReentrancyGuard {
 
   // low level token purchase function
   function buyTokens(address beneficiary) saleIsOn isUnderHardCap nonReentrant public payable {
-    require(beneficiary != address(0) && msg.value != 0);
+    require(beneficiary != address(0) && msg.value != 0); // require(beneficiary != address(0) && msg.value.div(priceUSD) >= minimumInvest);
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokens = getTokenAmount(centValue);
+    tokens = tokens.add(tokens.mul(25).div(100));
     centRaised = centRaised.add(centValue);
     token.mint(beneficiary, tokens);
     balances[msg.sender] = balances[msg.sender].add(weiAmount);

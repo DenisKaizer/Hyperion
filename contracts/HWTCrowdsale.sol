@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import "./HWT.sol";
+import "./HyperionWattToken.sol";
 
 contract ReentrancyGuard {
 
@@ -29,7 +29,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
 
   // The token being sold
-  HWT public token;
+  HyperionFund public token;
 
   // start and end timestamps where investments are allowed (both inclusive)
   uint256 public startTime;
@@ -54,7 +54,9 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   // investors => amount of money
   mapping(address => uint) public balances;
   mapping(address => uint) public balancesInCent;
-  mapping(address=>uint) public uclaimedTokens;
+  mapping(address=>uint) public claimedTokens;
+  mapping(address=>uint) public claimableTokens;
+
   /**
    * event for token purchase logging
    * @param purchaser who paid for the tokens
@@ -80,9 +82,9 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     startTime = _startTime;
     endTime = startTime + _period * 1 days;
     priceUSD = _priceUSD;
-    rate = 12500000000000000; // 0.0125 * 1 ether
+    rate = 16666670000000000; // 0.01666667 * 1 ether
     wallet = _wallet;
-    token = HWT(_token);
+    token = HyperionFund(_token);
     hardCap = 1000000000; // in Cents
     softCap =  500000000; //in Cents
   }
@@ -138,6 +140,8 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 
   function finishCrowdsale() public onlyOwner {
     token.transferOwnership(owner);
+    wallet.transfer(this.balance);
+    endTime = now;
     //token.mint();
   }
 
@@ -158,18 +162,18 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     require(_priceUSD != 0);
     priceUSD = _priceUSD;
   }
+
+
   //TODO add checks if its allowed
   function claimFreezedTokens() public nonReentrant{
     //TODO add modifier CanClaim
     //require(CanClaimNow)
-    //uint256 availableTokens = smth;
-    uclaimedTokens[msg.sender] -= availableTokens;
+    uint256 periodsPassed = now.sub(endTime).div(2592000);
+    uint256 availableTokens = (claimableTokens[msg.sender].mul(periodsPassed)).sub(claimedTokens[msg.sender]);
+    claimedTokens[msg.sender] = claimedTokens[msg.sender].add(availableTokens);
     token.transfer(msg.sender,availableTokens);
-    
-    
-    
-      
   }
+
   // manual selling tokens for fiat
   function manualTransfer(address _to, uint _valueUSD) public saleIsOn isUnderHardCap onlyOwnerOrManager {
     uint256 centValue = _valueUSD * 100;
@@ -177,7 +181,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     centRaised = centRaised.add(centValue);
     //75% wiil be freezed 
     token.mint(_to, tokensAmount.div(4));
-    uclaimedTokens[_to]+= tokensAmount.div(4).mul(3);
+    claimableTokens[msg.sender] += tokensAmount.div(4);
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
   }
 
@@ -187,13 +191,14 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     require(beneficiary != address(0) && msg.value != 0);
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
-    uint256 tokens = getTokenAmount(centValue);
+    uint256 tokensToSend = getTokenAmount(centValue).div(4);
     centRaised = centRaised.add(centValue);
-    //75% wiil be freezed 
-    token.mint(beneficiary, tokens.div(4));
-    uclaimedTokens[msg.sender] += tokens.div(4).mul(3);
+    //75% wiil be freezed
+    token.mint(beneficiary, tokensToSend);
+    claimableTokens[msg.sender] += tokensToSend;
+    token.mint(this, tokensToSend.mul(3));
     balances[msg.sender] = balances[msg.sender].add(weiAmount);
-    TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
+    TokenPurchase(msg.sender, beneficiary, weiAmount, tokensToSend);
     forwardFunds(weiAmount);
   }
 
