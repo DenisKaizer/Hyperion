@@ -271,7 +271,7 @@ contract MintableToken is StandardToken, Ownable {
   }
 }
 
-contract HyperionFund is MintableToken {
+contract HyperionWattToken is MintableToken {
 
   string public constant name = "Hyperion Watt Token";
 
@@ -280,7 +280,7 @@ contract HyperionFund is MintableToken {
   uint8 public constant decimals = 18;
   
   //Dividends allready claimed by Investor
-  mapping (address=> uint256)  claimedDividends; 
+  mapping (address=> uint256) public claimedDividends; 
   uint256 totalDividendsAmount ;
   
   //When transfering tokens decrease claimedDividends for sender and increase for reciever
