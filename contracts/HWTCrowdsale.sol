@@ -90,7 +90,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     wallet = _wallet;
     foundersWallet = _foundersWallet;
     token = HyperionWattToken(_token);
-    hardCap = 1000000000; // in Cents
+    hardCap = 230000 * 1 ether; // inTokens
     softCap =  500000000; //in Cents
   }
 
@@ -102,7 +102,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   }
 
   modifier isUnderHardCap() {
-    require(centRaised <= hardCap);
+    require(token.totalSupply() <= hardCap);
     _;
   }
 
@@ -144,9 +144,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   }
 
   function finishCrowdsale() public onlyOwner {
+    token.mint(foundersWallet,token.totalSupply().div(100).mul(8));
     token.transferOwnership(owner);
     endTime = now;
-    token.mint(foundersWallet,token.totalSupply().div(100).mul(8));
+   
     
     
   }
