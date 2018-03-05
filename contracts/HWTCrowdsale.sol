@@ -29,7 +29,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
 
   // The token being sold
-  HyperionFund public token;
+  HyperionWattToken public token;
 
   // start and end timestamps where investments are allowed (both inclusive)
   uint256 public startTime;
@@ -37,7 +37,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 
   // address where funds are collected
   address public wallet;
+  address public foundersWallet;
 
+
+  
   // how many token units a buyer gets per wei
   uint256 public rate; // tokens for one cent
 
@@ -71,6 +74,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   uint256 _startTime,
   uint256 _period,
   address _wallet,
+  address _foundersWallet,
   address _token,
   uint256 _priceUSD) public
   {
@@ -84,7 +88,8 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     priceUSD = _priceUSD;
     rate = 16666670000000000; // 0.01666667 * 1 ether
     wallet = _wallet;
-    token = HyperionFund(_token);
+    foundersWallet = _foundersWallet;
+    token = HyperionWattToken(_token);
     hardCap = 1000000000; // in Cents
     softCap =  500000000; //in Cents
   }
@@ -140,9 +145,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 
   function finishCrowdsale() public onlyOwner {
     token.transferOwnership(owner);
-    wallet.transfer(this.balance);
     endTime = now;
-    //token.mint();
+    token.mint(foundersWallet,token.totalSupply().div(100).mul(8));
+    
+    
   }
 
   // set the address from which you can change the rate
@@ -182,6 +188,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     //75% wiil be freezed 
     token.mint(_to, tokensAmount.div(4));
     claimableTokens[msg.sender] += tokensAmount.div(4);
+    token.mint(this, tokensAmount.mul(3));
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
   }
 
@@ -199,13 +206,17 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     token.mint(this, tokensToSend.mul(3));
     balances[msg.sender] = balances[msg.sender].add(weiAmount);
     TokenPurchase(msg.sender, beneficiary, weiAmount, tokensToSend);
-    forwardFunds(weiAmount);
+    if (centRaised > softCap){
+        forwardFunds(weiAmount);
+    }
+ 
   }
 
   function () external payable {
     buyTokens(msg.sender);
   }
 }
+
 
 
 
