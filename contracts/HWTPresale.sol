@@ -29,7 +29,7 @@ contract Presale is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
 
   // The token being sold
-  HyperionFund public token;
+  HyperionWattToken public token;
 
   // start and end timestamps where investments are allowed (both inclusive)
   uint256 public startTime;
@@ -43,7 +43,7 @@ contract Presale is Ownable, ReentrancyGuard {
 
   uint256 public priceUSD; // wei in one USD
 
-  uint256 public centRaised;
+  uint256 public tokensIssued;
 
   uint256 public hardCap;
 
@@ -63,7 +63,7 @@ contract Presale is Ownable, ReentrancyGuard {
    */
   event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
-
+//1520105792,1,"0x3dd90d5eb224c4637f885b7476eccba6b3aa45c5","0xf65953c15af0324d7c0ade9719728309aef87942",11621461119820
   function Presale(
   uint256 _startTime,
   uint256 _period,
@@ -81,8 +81,8 @@ contract Presale is Ownable, ReentrancyGuard {
     priceUSD = _priceUSD;
     rate = 16666670000000000; // 0.0125 * 1 ether
     wallet = _wallet;
-    token = HyperionFund(_token);
-    hardCap = 1000000000; // inCent
+    token = HyperionWattToken(_token);
+    hardCap = 230000 * 1 ether; // inTokens
   }
 
   // @return true if the transaction can buy tokens
@@ -93,7 +93,7 @@ contract Presale is Ownable, ReentrancyGuard {
   }
 
   modifier isUnderHardCap() {
-    require(centRaised <= hardCap);
+    require(tokensIssued <= hardCap );
     _;
   }
 
@@ -125,7 +125,7 @@ contract Presale is Ownable, ReentrancyGuard {
 
   function finishPreSale() public onlyOwner {
     token.transferOwnership(owner);
-    forwardFunds(this.balance);
+   
   }
 
   // set the address from which you can change the rate
@@ -149,19 +149,20 @@ contract Presale is Ownable, ReentrancyGuard {
   function manualTransfer(address _to, uint _valueUSD) public saleIsOn isUnderHardCap onlyOwnerOrManager {
     uint256 centValue = _valueUSD * 100;
     uint256 tokensAmount = getTokenAmount(centValue);
-    centRaised = centRaised.add(centValue);
+    tokensAmount = tokensAmount.add(tokensAmount.mul(25).div(100));
+    tokensIssued = tokensIssued.add(tokensAmount);
     token.mint(_to, tokensAmount);
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
   }
 
   // low level token purchase function
-  function buyTokens(address beneficiary) saleIsOn isUnderHardCap nonReentrant public payable {
+  function buyTokens(address beneficiary) saleIsOn /*isUnderHardCap */ nonReentrant public payable {
     require(beneficiary != address(0) && msg.value != 0); // require(beneficiary != address(0) && msg.value.div(priceUSD) >= minimumInvest);
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokens = getTokenAmount(centValue);
     tokens = tokens.add(tokens.mul(25).div(100));
-    centRaised = centRaised.add(centValue);
+    tokensIssued = tokensIssued.add(tokens);
     token.mint(beneficiary, tokens);
     balances[msg.sender] = balances[msg.sender].add(weiAmount);
     TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
@@ -172,6 +173,7 @@ contract Presale is Ownable, ReentrancyGuard {
     buyTokens(msg.sender);
   }
 }
+
 
 
 
