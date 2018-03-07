@@ -164,7 +164,7 @@ contract Presale is Ownable, ReentrancyGuard {
   function buyTokens(address beneficiary) saleIsOn isUnderHardCap  nonReentrant public payable {
     require(beneficiary != address(0) && msg.value != 0); 
     require(beneficiary != address(0) && msg.value.div(priceUSD) >= minimumInvest);
-    require(whiteList.accreditedInvestor[msg.sender] ==true);
+    require(whiteList.isInWhiteList(msg.sender));
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokens = getTokenAmount(centValue);
