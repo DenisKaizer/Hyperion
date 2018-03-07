@@ -42,7 +42,7 @@ contract Presale is Ownable, ReentrancyGuard {
   uint256 public rate; // tokens for one cent
 
   uint256 public priceUSD; // wei in one USD
-
+  uint25 public minimumInvest = 6;
   
 
   uint256 public hardCap;
@@ -83,6 +83,7 @@ contract Presale is Ownable, ReentrancyGuard {
     wallet = _wallet;
     token = HyperionWattToken(_token);
     hardCap = 230000 * 1 ether; // inTokens
+    
   }
 
   // @return true if the transaction can buy tokens
@@ -157,7 +158,8 @@ contract Presale is Ownable, ReentrancyGuard {
 
   // low level token purchase function
   function buyTokens(address beneficiary) saleIsOn isUnderHardCap  nonReentrant public payable {
-    require(beneficiary != address(0) && msg.value != 0); // require(beneficiary != address(0) && msg.value.div(priceUSD) >= minimumInvest);
+    require(beneficiary != address(0) && msg.value != 0); 
+    require(beneficiary != address(0) && msg.value.div(priceUSD) >= minimumInvest);
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokens = getTokenAmount(centValue);
