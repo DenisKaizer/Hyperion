@@ -291,9 +291,9 @@ contract HyperionWattToken is MintableToken {
   
   return super.transfer(_to,_value);
   } 
-  function tranferFromtransferFrom(address _from, address _to, uint256 _value) public returns (bool){
-  uint256 transferedClaims = claimedDividends[msg.sender].mul(_value.div(balances[msg.sender]));
-  claimedDividends[msg.sender]-=transferedClaims;
+  function tranferFrom(address _from, address _to, uint256 _value) public returns (bool){
+  uint256 transferedClaims = claimedDividends[_from].mul(_value.div(balances[_from])); 
+  claimedDividends[_from]-=transferedClaims; 
   claimedDividends[_to] += transferedClaims;
   
   return super.transferFrom(_from, _to, _value);

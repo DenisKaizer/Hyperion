@@ -42,13 +42,13 @@ contract Presale is Ownable, ReentrancyGuard {
   uint256 public rate; // tokens for one cent
 
   uint256 public priceUSD; // wei in one USD
-
-  uint256 public tokensIssued;
+  uint25 public minimumInvest = 6;
+  
 
   uint256 public hardCap;
 
   address oracle; //
-  address manager;
+  mapping (address => bool) public managers;
 
   // investors => amount of money
   mapping(address => uint) public balances;
@@ -83,6 +83,7 @@ contract Presale is Ownable, ReentrancyGuard {
     wallet = _wallet;
     token = HyperionWattToken(_token);
     hardCap = 230000 * 1 ether; // inTokens
+    
   }
 
   // @return true if the transaction can buy tokens
@@ -93,7 +94,7 @@ contract Presale is Ownable, ReentrancyGuard {
   }
 
   modifier isUnderHardCap() {
-    require(tokensIssued <= hardCap );
+    require(token.totalSupply() <= hardCap );
     _;
   }
 
@@ -103,7 +104,7 @@ contract Presale is Ownable, ReentrancyGuard {
   }
 
   modifier onlyOwnerOrManager(){
-    require(msg.sender == manager || msg.sender == owner);
+    require(managers[msg.sender] == true || msg.sender == owner);
     _;
   }
 
@@ -137,7 +138,7 @@ contract Presale is Ownable, ReentrancyGuard {
   // set manager's address
   function setManager(address _manager) public  onlyOwner {
     require(_manager != address(0));
-    manager = _manager;
+    managers[_manager] = true;
   }
 
   function changePriceUSD(uint256 _priceUSD) public  onlyOracle {
@@ -150,19 +151,20 @@ contract Presale is Ownable, ReentrancyGuard {
     uint256 centValue = _valueUSD * 100;
     uint256 tokensAmount = getTokenAmount(centValue);
     tokensAmount = tokensAmount.add(tokensAmount.mul(25).div(100));
-    tokensIssued = tokensIssued.add(tokensAmount);
+    
     token.mint(_to, tokensAmount);
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
   }
 
   // low level token purchase function
-  function buyTokens(address beneficiary) saleIsOn /*isUnderHardCap */ nonReentrant public payable {
-    require(beneficiary != address(0) && msg.value != 0); // require(beneficiary != address(0) && msg.value.div(priceUSD) >= minimumInvest);
+  function buyTokens(address beneficiary) saleIsOn isUnderHardCap  nonReentrant public payable {
+    require(beneficiary != address(0) && msg.value != 0); 
+    require(beneficiary != address(0) && msg.value.div(priceUSD) >= minimumInvest);
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokens = getTokenAmount(centValue);
     tokens = tokens.add(tokens.mul(25).div(100));
-    tokensIssued = tokensIssued.add(tokens);
+   
     token.mint(beneficiary, tokens);
     balances[msg.sender] = balances[msg.sender].add(weiAmount);
     TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
