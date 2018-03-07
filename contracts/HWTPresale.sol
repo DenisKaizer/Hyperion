@@ -1,6 +1,7 @@
 pragma solidity ^0.4.18;
 
 import "./HyperionWattToken.sol";
+import "./WhiteList.sol";
 
 contract ReentrancyGuard {
 
@@ -30,7 +31,7 @@ contract Presale is Ownable, ReentrancyGuard {
 
   // The token being sold
   HyperionWattToken public token;
-
+  WhiteList public whiteList;
   // start and end timestamps where investments are allowed (both inclusive)
   uint256 public startTime;
   uint256 public endTime;
@@ -42,7 +43,7 @@ contract Presale is Ownable, ReentrancyGuard {
   uint256 public rate; // tokens for one cent
 
   uint256 public priceUSD; // wei in one USD
-  uint25 public minimumInvest = 6;
+  uint256 public minimumInvest = 6;
   
 
   uint256 public hardCap;
@@ -69,12 +70,14 @@ contract Presale is Ownable, ReentrancyGuard {
   uint256 _period,
   address _wallet,
   address _token,
-  uint256 _priceUSD) public
+  uint256 _priceUSD,
+  address _whitelist) public
   {
     require(_period != 0);
     require(_priceUSD != 0);
     require(_wallet != address(0));
     require(_token != address(0));
+    require(_whitelist != address(0));
 
     startTime = _startTime;
     endTime = startTime + _period * 1 days;
@@ -82,6 +85,7 @@ contract Presale is Ownable, ReentrancyGuard {
     rate = 16666670000000000; // 0.0125 * 1 ether
     wallet = _wallet;
     token = HyperionWattToken(_token);
+    whiteList = WhiteList(_whitelist);
     hardCap = 230000 * 1 ether; // inTokens
     
   }
@@ -160,6 +164,7 @@ contract Presale is Ownable, ReentrancyGuard {
   function buyTokens(address beneficiary) saleIsOn isUnderHardCap  nonReentrant public payable {
     require(beneficiary != address(0) && msg.value != 0); 
     require(beneficiary != address(0) && msg.value.div(priceUSD) >= minimumInvest);
+    require(whiteList.accreditedInvestor[msg.sender] ==true);
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokens = getTokenAmount(centValue);
@@ -175,6 +180,7 @@ contract Presale is Ownable, ReentrancyGuard {
     buyTokens(msg.sender);
   }
 }
+
 
 
 
