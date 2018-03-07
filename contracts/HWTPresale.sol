@@ -43,7 +43,7 @@ contract Presale is Ownable, ReentrancyGuard {
 
   uint256 public priceUSD; // wei in one USD
 
-  uint256 public tokensIssued;
+  
 
   uint256 public hardCap;
 
@@ -93,7 +93,7 @@ contract Presale is Ownable, ReentrancyGuard {
   }
 
   modifier isUnderHardCap() {
-    require(tokensIssued <= hardCap );
+    require(token.totalSupply() <= hardCap );
     _;
   }
 
@@ -150,7 +150,7 @@ contract Presale is Ownable, ReentrancyGuard {
     uint256 centValue = _valueUSD * 100;
     uint256 tokensAmount = getTokenAmount(centValue);
     tokensAmount = tokensAmount.add(tokensAmount.mul(25).div(100));
-    tokensIssued = tokensIssued.add(tokensAmount);
+    
     token.mint(_to, tokensAmount);
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
   }
@@ -162,7 +162,7 @@ contract Presale is Ownable, ReentrancyGuard {
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokens = getTokenAmount(centValue);
     tokens = tokens.add(tokens.mul(25).div(100));
-    tokensIssued = tokensIssued.add(tokens);
+   
     token.mint(beneficiary, tokens);
     balances[msg.sender] = balances[msg.sender].add(weiAmount);
     TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
