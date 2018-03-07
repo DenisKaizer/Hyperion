@@ -48,7 +48,7 @@ contract Presale is Ownable, ReentrancyGuard {
   uint256 public hardCap;
 
   address oracle; //
-  address manager;
+  mapping (address => bool) public managers;
 
   // investors => amount of money
   mapping(address => uint) public balances;
@@ -103,7 +103,7 @@ contract Presale is Ownable, ReentrancyGuard {
   }
 
   modifier onlyOwnerOrManager(){
-    require(msg.sender == manager || msg.sender == owner);
+    require(managers[msg.sender] == true || msg.sender == owner);
     _;
   }
 
@@ -137,7 +137,7 @@ contract Presale is Ownable, ReentrancyGuard {
   // set manager's address
   function setManager(address _manager) public  onlyOwner {
     require(_manager != address(0));
-    manager = _manager;
+    managers[_manager] = true;
   }
 
   function changePriceUSD(uint256 _priceUSD) public  onlyOracle {
