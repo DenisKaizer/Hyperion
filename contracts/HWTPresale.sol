@@ -42,7 +42,7 @@ contract Presale is Ownable, ReentrancyGuard {
   uint256 public rate; // tokens for one cent
 
   uint256 public priceUSD; // wei in one USD
-  uint25 public minimumInvest = 6;
+  uint256 public minimumInvest = 6;
   
 
   uint256 public hardCap;
