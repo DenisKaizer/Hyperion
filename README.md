@@ -8,6 +8,10 @@ Hyperion Token - Сonstruction of solar power stations.
 
 Hyperion Token  is 1 Watt distributed among grid
 
+# Dependencies 
+[![truffle](https://img.shields.io/badge/truffle-v3.4.11-orange.svg)](https://truffle.readthedocs.io/en/latest/)
+[![solidity](https://img.shields.io/badge/solidity-docs-red.svg)](http://solidity.readthedocs.io/en/develop/types.html)
+
 # Smart contracts
 
 ## [HyperionWattToken](https://github.com/DenisKaizer/Hyperion/blob/master/contracts/HyperionWattToken.sol)
@@ -51,6 +55,8 @@ Success terms |	250 000 000 less 20 000 000 (8% to Hyperion Fund) less presale t
 Refund Terms	| yes if less than $5 000 000 is collected
 Withdrawal terms |	Real-time
 Manual token issue (if founders accepts BTC/USD/EURO)	| yes
+
+
 
 # Token issuance process walkthrough
 
