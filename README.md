@@ -19,10 +19,6 @@ Token name	| Hyperion Watt Token
 Symbol 	 | HWT
 Decimals |	18
 Token amount to issue |	250 000 000 (incl 8% tokens hold by Hyperion Fund)
-
-Token 	| Functionality
------------- | -------------
-
 Additional token emission |	no
 Freeze tokens | 	25% in first 3 months after ICO, 50% in 6 months after ICO, 75% in 9 months after ICO, 100% in 12 months after ICO.  
 
@@ -36,11 +32,25 @@ Basic Parameters of Presale
 
 First Header | Second Header
 ------------ | -------------
+Token price in ETH	| automatic calculation based on price $0,6 per Token
+Automatic rate change |	yes
+Presale bonuses/discounts |	25% in-kind token bonus ~ 20% discount to ICO price (min. $10000)
+Success terms	184 000 000 tokens + 25% in-kind bonus | 230 000 000 (presale hardcap)
+Refund Terms	| no
+Withdrawal terms |	Real-time
+Manual token issue (if founders accepts BTC/USD/EURO) |	yes
 
+## [Hyperion crowdsale](https://github.com/DenisKaizer/Hyperion/blob/master/contracts/HWTCrowdsale.sol)
 
-Content from cell 1 | Content from cell 2
-Content in the first column | Content in the second column
-
+First Header | Second Header
+------------ | -------------
+Total amount of tokens to be sold	| 250 million less token number sold at presale
+Token price in ETH	 | automatic calculation based on price $0,6 per Token
+Automatic rate change | 	yes
+Success terms |	250 000 000 less 20 000 000 (8% to Hyperion Fund) less presale tokens
+Refund Terms	| yes if less than $5 000 000 is collected
+Withdrawal terms |	Real-time
+Manual token issue (if founders accepts BTC/USD/EURO)	| yes
 
 # Token issuance process walkthrough
 
