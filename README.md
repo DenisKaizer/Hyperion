@@ -1,5 +1,7 @@
+<p align="center">
+  <img width="240" height ="240"  alt="Hyperion" src = "./assets/Hyperion.jpg">
+</p>
 
-<img width="240" height ="240" align="center" alt="Hyperion" src = "./assets/Hyperion.jpg">
 
 # Hyperion Fund Smart Contracts
 
@@ -61,5 +63,7 @@ Manual token issue (if founders accepts BTC/USD/EURO)	| yes
 # Token issuance process walkthrough
 
 # Created by 
+<p align="center">
+  <img width="240" height ="240" alt="Hyperion" src = "./assets/Hashlab.jpg">
+</p>
 
-<img width="240" height ="240" alt="Hyperion" src = "./assets/Hashlab.jpg">
