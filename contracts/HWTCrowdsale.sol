@@ -1,6 +1,7 @@
 pragma solidity ^0.4.18;
 
 import "./HyperionWattToken.sol";
+import "./WhiteList.sol";
 
 contract ReentrancyGuard {
 
@@ -38,7 +39,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   // address where funds are collected
   address public wallet;
   address public foundersWallet;
-
+  WhiteList public whiteList;
 
   
   // how many token units a buyer gets per wei
@@ -76,12 +77,14 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   address _wallet,
   address _foundersWallet,
   address _token,
-  uint256 _priceUSD) public
+  uint256 _priceUSD,
+   address _whitelist) public
   {
     require(_period != 0);
     require(_priceUSD != 0);
     require(_wallet != address(0));
     require(_token != address(0));
+    require(_whitelist != address(0));
 
     startTime = _startTime;
     endTime = startTime + _period * 1 days;
@@ -92,6 +95,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     token = HyperionWattToken(_token);
     hardCap = 230000 * 1 ether; // inTokens
     softCap =  500000000; //in Cents
+     whiteList = WhiteList(_whitelist);
   }
 
   // @return true if the transaction can buy tokens
@@ -197,6 +201,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   // low level token purchase function
   function buyTokens(address beneficiary) saleIsOn isUnderHardCap nonReentrant public payable {
     require(beneficiary != address(0) && msg.value != 0);
+    require(whiteList.isInWhiteList(msg.sender));
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokensToSend = getTokenAmount(centValue).div(4);
