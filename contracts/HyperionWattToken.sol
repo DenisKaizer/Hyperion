@@ -1,49 +1,8 @@
 pragma solidity ^0.4.18;
 
 
+import "./Ownable.sol";
 
-
-/**
- * @title Ownable
- * @dev The Ownable contract has an owner address, and provides basic authorization control
- * functions, this simplifies the implementation of "user permissions".
- */
-contract Ownable {
-  address public owner;
-
-
-  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
-
-  /**
-   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
-   * account.
-   */
-  function Ownable() public {
-    owner = msg.sender;
-  }
-
-
-  /**
-   * @dev Throws if called by any account other than the owner.
-   */
-  modifier onlyOwner() {
-    require(msg.sender == owner);
-    _;
-  }
-
-
-  /**
-   * @dev Allows the current owner to transfer control of the contract to a newOwner.
-   * @param newOwner The address to transfer ownership to.
-   */
-  function transferOwnership(address newOwner) public onlyOwner {
-    require(newOwner != address(0));
-    OwnershipTransferred(owner, newOwner);
-    owner = newOwner;
-  }
-
-}
 
 /**
  * @title ERC20Basic
@@ -291,9 +250,9 @@ contract HyperionWattToken is MintableToken {
   
   return super.transfer(_to,_value);
   } 
-  function tranferFrom(address _from, address _to, uint256 _value) public returns (bool){
-  uint256 transferedClaims = claimedDividends[_from].mul(_value.div(balances[_from])); 
-  claimedDividends[_from]-=transferedClaims; 
+  function tranferFromtransferFrom(address _from, address _to, uint256 _value) public returns (bool){
+  uint256 transferedClaims = claimedDividends[msg.sender].mul(_value.div(balances[msg.sender]));
+  claimedDividends[msg.sender]-=transferedClaims;
   claimedDividends[_to] += transferedClaims;
   
   return super.transferFrom(_from, _to, _value);
