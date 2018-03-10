@@ -244,20 +244,18 @@ contract HyperionWattToken is MintableToken {
   
   //When transfering tokens decrease claimedDividends for sender and increase for reciever
   function transfer(address _to, uint256 _value)public returns (bool){
-  uint256 transferedClaims = claimedDividends[msg.sender].mul(_value.div(balances[msg.sender]));
-  claimedDividends[msg.sender]-=transferedClaims;
-  claimedDividends[_to] += transferedClaims;
-  
-  return super.transfer(_to,_value);
+    uint256 transferedClaims = claimedDividends[msg.sender].mul(_value.div(balances[msg.sender]));
+    claimedDividends[msg.sender]-=transferedClaims;
+    claimedDividends[_to] += transferedClaims;
+
+    return super.transfer(_to,_value);
   } 
   function tranferFromtransferFrom(address _from, address _to, uint256 _value) public returns (bool){
-  uint256 transferedClaims = claimedDividends[msg.sender].mul(_value.div(balances[msg.sender]));
-  claimedDividends[msg.sender]-=transferedClaims;
-  claimedDividends[_to] += transferedClaims;
-  
-  return super.transferFrom(_from, _to, _value);
-   
-    
-    
+    uint256 transferedClaims = claimedDividends[msg.sender].mul(_value.div(balances[msg.sender]));
+    claimedDividends[msg.sender]-=transferedClaims;
+    claimedDividends[_to] += transferedClaims;
+
+    return super.transferFrom(_from, _to, _value);
+
   }
 }

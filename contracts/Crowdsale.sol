@@ -45,7 +45,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   // how many token units a buyer gets per wei
   uint256 public rate; // tokens for one cent
 
-  uint256 public priceUSD; // wei in one USD
+  uint256 public priceUSD; // wei in one cent USD
 
   uint256 public centRaised;
 
@@ -78,7 +78,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   address _foundersWallet,
   address _token,
   uint256 _priceUSD,
-   address _whitelist) public
+  address _whitelist) public
   {
     require(_period != 0);
     require(_priceUSD != 0);
@@ -95,7 +95,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     token = HyperionWattToken(_token);
     hardCap = 230000 * 1 ether; // inTokens
     softCap =  500000000; //in Cents
-     whiteList = WhiteList(_whitelist);
+    whiteList = WhiteList(_whitelist);
   }
 
   // @return true if the transaction can buy tokens

@@ -13,6 +13,7 @@ contract('TestPresale', function (accounts) {
 
     it("token's owner should be presaleContract", async () => {
         let TokenInstance = await Token.deployed();
+        await TokenInstance.transferOwnership(Presale.address)
         let TokensOwner = await TokenInstance.owner.call();
         assert.equal(TokensOwner, Presale.address);
     })
