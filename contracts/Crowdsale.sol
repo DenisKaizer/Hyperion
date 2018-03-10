@@ -120,7 +120,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     _;
   }
 
-
+  modifier CanClaimNow (){
+      require(now>endTime + 7776000);
+      _;
+  }
   // @return true if crowdsale event has ended
   function hasEnded() public view returns (bool) {
     return now > endTime;
@@ -170,12 +173,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     require(_priceUSD != 0);
     priceUSD = _priceUSD;
   }
-
+    
 
   //TODO add checks if its allowed
-  function claimFreezedTokens() public nonReentrant{
-    //TODO add modifier CanClaim
-    //require(CanClaimNow)
+  function claimFreezedTokens() public nonReentrant CanClaimNow{
     uint256 periodsPassed = now.sub(endTime).div(2592000);
     uint256 availableTokens = (claimableTokens[msg.sender].mul(periodsPassed)).sub(claimedTokens[msg.sender]);
     claimedTokens[msg.sender] = claimedTokens[msg.sender].add(availableTokens);
@@ -219,6 +220,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     buyTokens(msg.sender);
   }
 }
+
 
 
 
