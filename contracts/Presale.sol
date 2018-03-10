@@ -26,40 +26,34 @@ contract ReentrancyGuard {
   }
 }
 
-contract Crowdsale is Ownable, ReentrancyGuard {
+contract Presale is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
 
   // The token being sold
   HyperionWattToken public token;
-
+  WhiteList public whiteList;
   // start and end timestamps where investments are allowed (both inclusive)
   uint256 public startTime;
   uint256 public endTime;
 
   // address where funds are collected
   address public wallet;
-  address public foundersWallet;
-  WhiteList public whiteList;
 
-  
   // how many token units a buyer gets per wei
   uint256 public rate; // tokens for one cent
 
-  uint256 public priceUSD; // wei in one USD
-
-  uint256 public centRaised;
+  uint256 public priceUSD; // wei in one USD cent
+  uint256 public minimumInvest = 600; // USD cent
+  
 
   uint256 public hardCap;
-  uint256 public softCap;
-  
+
   address oracle; //
-  address manager;
+  mapping (address => bool) public managers;
 
   // investors => amount of money
   mapping(address => uint) public balances;
   mapping(address => uint) public balancesInCent;
-  mapping(address=>uint) public claimedTokens;
-  mapping(address=>uint) public claimableTokens;
 
   /**
    * event for token purchase logging
@@ -70,15 +64,14 @@ contract Crowdsale is Ownable, ReentrancyGuard {
    */
   event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
-
-  function Crowdsale(
+//1520105792,1,"0x3dd90d5eb224c4637f885b7476eccba6b3aa45c5","0xf65953c15af0324d7c0ade9719728309aef87942",11621461119820
+  function Presale(
   uint256 _startTime,
   uint256 _period,
   address _wallet,
-  address _foundersWallet,
   address _token,
   uint256 _priceUSD,
-   address _whitelist) public
+  address _whitelist) public
   {
     require(_period != 0);
     require(_priceUSD != 0);
@@ -91,11 +84,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     priceUSD = _priceUSD;
     rate = 16666670000000000; // 0.01666667 * 1 ether
     wallet = _wallet;
-    foundersWallet = _foundersWallet;
     token = HyperionWattToken(_token);
+    whiteList = WhiteList(_whitelist);
     hardCap = 230000 * 1 ether; // inTokens
-    softCap =  500000000; //in Cents
-     whiteList = WhiteList(_whitelist);
+    
   }
 
   // @return true if the transaction can buy tokens
@@ -106,7 +98,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   }
 
   modifier isUnderHardCap() {
-    require(token.totalSupply() <= hardCap);
+    require(token.totalSupply() <= hardCap );
     _;
   }
 
@@ -116,26 +108,15 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   }
 
   modifier onlyOwnerOrManager(){
-    require(msg.sender == manager || msg.sender == owner);
+    require(managers[msg.sender] == true || msg.sender == owner);
     _;
   }
-
 
   // @return true if crowdsale event has ended
   function hasEnded() public view returns (bool) {
     return now > endTime;
   }
- 
- modifier refundAllowed()  {
-    require(centRaised < softCap && now > endTime);
-    _;
-  }
 
-  function refund() public refundAllowed nonReentrant {
-    uint valueToReturn = balances[msg.sender];
-    balances[msg.sender] = 0;
-    msg.sender.transfer(valueToReturn);
-  }
   // Override this method to have a way to add business logic to your crowdsale when buying
   function getTokenAmount(uint256 centValue) internal view returns(uint256) {
     return centValue.mul(rate);
@@ -147,13 +128,9 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     wallet.transfer(value);
   }
 
-  function finishCrowdsale() public onlyOwner {
-    token.mint(foundersWallet,token.totalSupply().div(100).mul(8));
+  function finishPreSale() public onlyOwner {
     token.transferOwnership(owner);
-    endTime = now;
    
-    
-    
   }
 
   // set the address from which you can change the rate
@@ -162,11 +139,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     oracle = _oracle;
   }
 
-  
   // set manager's address
   function setManager(address _manager) public  onlyOwner {
     require(_manager != address(0));
-    manager = _manager;
+    managers[_manager] = true;
   }
 
   function changePriceUSD(uint256 _priceUSD) public  onlyOracle {
@@ -174,54 +150,37 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     priceUSD = _priceUSD;
   }
 
-
-  //TODO add checks if its allowed
-  function claimFreezedTokens() public nonReentrant{
-    //TODO add modifier CanClaim
-    //require(CanClaimNow)
-    uint256 periodsPassed = now.sub(endTime).div(2592000);
-    uint256 availableTokens = (claimableTokens[msg.sender].mul(periodsPassed)).sub(claimedTokens[msg.sender]);
-    claimedTokens[msg.sender] = claimedTokens[msg.sender].add(availableTokens);
-    token.transfer(msg.sender,availableTokens);
-  }
-
   // manual selling tokens for fiat
   function manualTransfer(address _to, uint _valueUSD) public saleIsOn isUnderHardCap onlyOwnerOrManager {
     uint256 centValue = _valueUSD * 100;
     uint256 tokensAmount = getTokenAmount(centValue);
-    centRaised = centRaised.add(centValue);
-    //75% wiil be freezed 
-    token.mint(_to, tokensAmount.div(4));
-    claimableTokens[msg.sender] += tokensAmount.div(4);
-    token.mint(this, tokensAmount.mul(3));
+    tokensAmount = tokensAmount.add(tokensAmount.mul(25).div(100));
+    
+    token.mint(_to, tokensAmount);
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
   }
 
-  
   // low level token purchase function
-  function buyTokens(address beneficiary) saleIsOn isUnderHardCap nonReentrant public payable {
-    require(beneficiary != address(0) && msg.value != 0);
+  function buyTokens(address beneficiary) saleIsOn isUnderHardCap  nonReentrant public payable {
+    require(beneficiary != address(0) && msg.value != 0); 
+    require(beneficiary != address(0) && msg.value.div(priceUSD) >= minimumInvest);
     require(whiteList.isInWhiteList(msg.sender));
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
-    uint256 tokensToSend = getTokenAmount(centValue).div(4);
-    centRaised = centRaised.add(centValue);
-    //75% wiil be freezed
-    token.mint(beneficiary, tokensToSend);
-    claimableTokens[msg.sender] += tokensToSend;
-    token.mint(this, tokensToSend.mul(3));
+    uint256 tokens = getTokenAmount(centValue);
+    tokens = tokens.add(tokens.mul(25).div(100));
+   
+    token.mint(beneficiary, tokens);
     balances[msg.sender] = balances[msg.sender].add(weiAmount);
-    TokenPurchase(msg.sender, beneficiary, weiAmount, tokensToSend);
-    if (centRaised > softCap){
-        forwardFunds(weiAmount);
-    }
- 
+    TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
+    forwardFunds(weiAmount);
   }
 
   function () external payable {
     buyTokens(msg.sender);
   }
 }
+
 
 
 
