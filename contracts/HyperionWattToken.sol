@@ -242,6 +242,16 @@ contract HyperionWattToken is MintableToken {
   mapping (address=> uint256) public claimedDividends; 
   uint256 totalDividendsAmount ;
   
+  function increaseClaimedDividends(address _investor,uint256 _amount ) onlyOwner public
+  {
+    claimedDividends[_investor]+=_amount;
+      
+  }
+   function decreaseClaimedDividends(address _investor,uint256 _amount ) onlyOwner public
+  {
+    claimedDividends[_investor]-=_amount;
+      
+  }
   //When transfering tokens decrease claimedDividends for sender and increase for reciever
   function transfer(address _to, uint256 _value)public returns (bool){
     uint256 transferedClaims = claimedDividends[msg.sender].mul(_value.div(balances[msg.sender]));
