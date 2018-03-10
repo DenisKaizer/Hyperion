@@ -177,7 +177,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 
   //TODO add checks if its allowed
   function claimFreezedTokens() public nonReentrant CanClaimNow{
-    uint256 periodsPassed = now.sub(endTime).div(2592000);
+    uint256 periodsPassed = now.sub(endTime).div(7776000);
     uint256 availableTokens = (claimableTokens[msg.sender].mul(periodsPassed)).sub(claimedTokens[msg.sender]);
     claimedTokens[msg.sender] = claimedTokens[msg.sender].add(availableTokens);
     token.transfer(msg.sender,availableTokens);
