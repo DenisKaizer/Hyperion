@@ -182,13 +182,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
       periodsPassed = 3;
     }
     uint256 availableTokens = (claimableTokens[msg.sender].mul(periodsPassed)).sub(claimedTokens[msg.sender]);
-    require(availableTokens + claimedTokens[msg.sender] <= claimableTokens[msg.sender].mul(3)); // it's to be sure
-    // or may be
-    /*
     if (availableTokens + claimedTokens[msg.sender] > claimableTokens[msg.sender].mul(3)){
       availableTokens = claimableTokens[msg.sender].mul(3) - claimedTokens[msg.sender];
     }
-    */
+    
     claimedTokens[msg.sender] = claimedTokens[msg.sender].add(availableTokens);
     token.transfer(msg.sender,availableTokens);
   }
