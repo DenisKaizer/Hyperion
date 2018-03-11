@@ -151,6 +151,8 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   }
 
   function finishCrowdsale() public onlyOwner {
+    require(centRaised > softCap);
+    forwardFunds(this.balance);
     token.mint(foundersWallet,token.totalSupply().div(100).mul(8));
     token.transferOwnership(owner);
     endTime = now;

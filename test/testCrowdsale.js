@@ -66,5 +66,27 @@ contract('TestCrowdsale', function (accounts) {
 
     })
 
+    it("claimed freeze work correct", async () => {
+        let TokenInstance = await Token.deployed();
+        let CrowdsaleInstance = await Crowdsale.deployed();
+        let WhiteListInstance = await WhiteList.deployed();
+
+        await WhiteListInstance.addToWhiteList(accounts[2])
+
+        await CrowdsaleInstance.sendTransaction({ value: 1e+18, from: accounts[2] })
+
+        let tokenBalance = await TokenInstance.balanceOf(accounts[2]);
+        let tokenBalance2 = tokenBalance.toNumber();
+        console.log(tokenBalance2)
+
+        claimedTokens =  await CrowdsaleInstance.claimedTokens(accounts[2]).then(result => result.toNumber());
+        console.log(claimedTokens)
+        claimableTokens =  await CrowdsaleInstance.claimableTokens(accounts[2]).then(result => result.toNumber());
+        console.log(claimableTokens)
+
+        //await CrowdsaleInstance.finishCrowdsale()
+
+    })
+
 
 })
