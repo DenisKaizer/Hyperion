@@ -93,7 +93,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     wallet = _wallet;
     foundersWallet = _foundersWallet;
     token = HyperionWattToken(_token);
-    hardCap = 230000 * 1 ether; // inTokens
+    hardCap = 230000000 * 1 ether; // inTokens
     softCap =  500000000; //in Cents
     whiteList = WhiteList(_whitelist);
   }
