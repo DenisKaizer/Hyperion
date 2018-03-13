@@ -240,14 +240,14 @@ contract HyperionWattToken is MintableToken {
   
   //Dividends allready claimed by Investor
   mapping (address=> uint256) public assuranvePayments; 
-  uint256 totalDividendsAmount ;
+  uint256 totalAssuranvePayments ;
   
   function increaseAssuranvePayments(address _investor,uint256 _amount ) onlyOwner public
   {
     assuranvePayments[_investor]+=_amount;
       
   }
-   function decreaseClaimedDividends(address _investor,uint256 _amount ) onlyOwner public
+   function decreaseAssuranvePayments(address _investor,uint256 _amount ) onlyOwner public
   {
     assuranvePayments[_investor]-=_amount;
       
