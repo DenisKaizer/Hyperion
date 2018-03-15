@@ -5,22 +5,24 @@ import "./Ownable.sol";
 contract WhiteList is Ownable {
     
   mapping(address => bool) public accreditedInvestor;
-  address crowdsaleManager ;
+  mapping(address => bool) public crowdsaleMangers;
     
   modifier onlyCrowdsaleManagerOrOwner() {
-    require(crowdsaleManager == msg.sender || owner == msg.sender);
+    require(crowdsaleMangers[msg.sender] || owner == msg.sender);
     _;
   }
     
-  function WhiteList(address _crowdsaleManager) public {
-        
-    crowdsaleManager =_crowdsaleManager;
-        
+  function WhiteList(address _crowdsaleManager) public { 
+    crowdsaleMangers[_crowdsaleManager] = true;     
   }
     
     
   function addToWhiteList(address _investor) public onlyCrowdsaleManagerOrOwner  {
     accreditedInvestor[_investor] = true;
+  }
+  
+  function addCrowdsaleManager(address _crowdsaleManager) onlyOwner {
+    crowdsaleMangers[_crowdsaleManager] = true;
   }
 
   function removeFromWhiteList(address _badInvestor) public onlyCrowdsaleManagerOrOwner  {
