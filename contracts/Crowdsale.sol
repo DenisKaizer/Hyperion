@@ -41,7 +41,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   address public foundersWallet;
   WhiteList public whiteList;
 
-  
+
   // how many token units a buyer gets per wei
   uint256 public rate; // tokens for one cent
 
@@ -51,7 +51,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 
   uint256 public hardCap;
   uint256 public softCap;
-  
+
   address oracle; //
   address manager;
 
@@ -128,7 +128,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   function hasEnded() public view returns (bool) {
     return now > endTime;
   }
- 
+
  modifier refundAllowed()  {
     require(centRaised < softCap && now > endTime);
     _;
@@ -164,7 +164,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     oracle = _oracle;
   }
 
-  
+
   // set manager's address
   function setManager(address _manager) public  onlyOwner {
     require(_manager != address(0));
@@ -175,7 +175,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     require(_priceUSD != 0);
     priceUSD = _priceUSD;
   }
-    
+
 
   //TODO add checks if its allowed
   function claimFreezedTokens() public nonReentrant CanClaimNow {
@@ -187,7 +187,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     if (availableTokens + claimedTokens[msg.sender] > claimableTokens[msg.sender].mul(3)){
       availableTokens = claimableTokens[msg.sender].mul(3) - claimedTokens[msg.sender];
     }
-    
+
     claimedTokens[msg.sender] = claimedTokens[msg.sender].add(availableTokens);
     token.transfer(msg.sender,availableTokens);
   }
@@ -197,14 +197,14 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     uint256 centValue = _valueUSD * 100;
     uint256 tokensAmount = getTokenAmount(centValue);
     centRaised = centRaised.add(centValue);
-    //75% wiil be freezed 
+    //75% wiil be freezed
     token.mint(_to, tokensAmount.div(4));
     claimableTokens[msg.sender] += tokensAmount.div(4);
     token.mint(this, tokensAmount.mul(3));
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
   }
 
-  
+
   // low level token purchase function
   function buyTokens(address beneficiary) saleIsOn isUnderHardCap nonReentrant public payable {
     require(beneficiary != address(0) && msg.value != 0);
@@ -222,7 +222,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     if (centRaised > softCap){
         forwardFunds(weiAmount);
     }
- 
+
   }
 
   function () external payable {

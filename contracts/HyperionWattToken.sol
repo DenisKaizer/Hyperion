@@ -232,9 +232,9 @@ contract MintableToken is StandardToken, Ownable {
 
 contract HyperionWattToken is MintableToken {
 
-  string public constant name = "Hyperion Watt Token";
+  string public constant name = "Test Token ";
 
-  string public constant symbol = "HWT";
+  string public constant symbol = "TTT";
 
   uint8 public constant decimals = 18;
   
