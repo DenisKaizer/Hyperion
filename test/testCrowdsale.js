@@ -10,8 +10,6 @@ const WhiteList = artifacts.require('./WhiteList.sol');
 
 contract('TestCrowdsale', function (accounts) {
 
-
-
     it("token's owner should be crowdsaleContract", async () => {
         let TokenInstance = await Token.deployed();
         await TokenInstance.transferOwnership(Crowdsale.address)
@@ -19,7 +17,7 @@ contract('TestCrowdsale', function (accounts) {
         assert.equal(TokensOwner, Crowdsale.address);
     })
 
-    it("whiteList and freeze should work correct", async () => {
+    it("sender transaction should be in white list", async () => {
         let TokenInstance = await Token.deployed();
         let CrowdsaleInstance = await Crowdsale.deployed();
         let WhiteListInstance = await WhiteList.deployed();
@@ -51,19 +49,6 @@ contract('TestCrowdsale', function (accounts) {
         assert.equal(inWL, true, "should be true");
 
         await CrowdsaleInstance.sendTransaction({ value: 1e+18, from: accounts[1] })
-
-
-
-        tokenBalance = await TokenInstance.balanceOf(accounts[1]);
-        let tokenBalance2 = tokenBalance.toNumber();
-        console.log(tokenBalance2)
-
-        claimedTokens =  await CrowdsaleInstance.claimedTokens(accounts[1]).then(result => result.toNumber());
-        console.log(claimedTokens)
-        claimableTokens =  await CrowdsaleInstance.claimableTokens(accounts[1]).then(result => result.toNumber());
-        console.log(claimableTokens)
-
-
     })
 
     it("claimed freeze work correct", async () => {
@@ -81,11 +66,11 @@ contract('TestCrowdsale', function (accounts) {
 
         claimedTokens =  await CrowdsaleInstance.claimedTokens(accounts[2]).then(result => result.toNumber());
         console.log(claimedTokens)
+        
         claimableTokens =  await CrowdsaleInstance.claimableTokens(accounts[2]).then(result => result.toNumber());
         console.log(claimableTokens)
 
-        //await CrowdsaleInstance.finishCrowdsale()
-
+        assert.ok(claimedTokens < claimableTokens);
     })
 
 

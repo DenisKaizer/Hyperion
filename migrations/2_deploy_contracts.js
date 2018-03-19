@@ -13,9 +13,9 @@ module.exports = function(deployer) {
       return deployer.deploy(WhiteList, crowdsaleManager);
   }).then(function () {
       return deployer.deploy(Presale, unix, 10, wallet , HWT.address, 13692121690100, WhiteList.address);
-  })/**.then(function () {
+  }).then(function () {
       return deployer.deploy(Crowdsale, unix, 10, wallet, foundersWallet , HWT.address, 13692121690100, WhiteList.address);
-  })**/
+  })
 };
 
 
