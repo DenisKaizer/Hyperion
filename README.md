@@ -64,6 +64,6 @@ Manual token issue (if founders accepts BTC/USD/EURO)	| yes
 
 # Created by 
 <p align="center">
-  <img width="240" height ="240" alt="Hyperion" src = "./assets/Hashlab.jpg">
+  <img width="240" height ="240" alt="Hashlab" src = "./assets/Hashlab.jpg">
 </p>
 
