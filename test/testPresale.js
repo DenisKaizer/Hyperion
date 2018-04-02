@@ -10,7 +10,6 @@ const WhiteList = artifacts.require('./WhiteList.sol');
 
 contract('TestPresale', function (accounts) {
 
-
     it("token's owner should be presaleContract", async () => {
         let TokenInstance = await Token.deployed();
         await TokenInstance.transferOwnership(Presale.address)
@@ -50,7 +49,6 @@ contract('TestPresale', function (accounts) {
 
         assert.equal(inWL, true, "should be true");
 
-
         await PresaleInstance.sendTransaction({ value: 1e+18, from: accounts[1] })
 
         tokenBalance = await TokenInstance.balanceOf(accounts[1]);
@@ -58,8 +56,7 @@ contract('TestPresale', function (accounts) {
         console.log(tokenBalance2)
     })
 
-
-    it("chck perms", async () => {
+    it("token price can be changed only oracle", async () => {
         let TokenInstance = await Token.deployed();
         let PresaleInstance = await Presale.deployed();
         let WhiteListInstance = await WhiteList.deployed();
@@ -90,9 +87,16 @@ contract('TestPresale', function (accounts) {
         let priceUSD = await PresaleInstance.priceUSD.call().then(result => result.toNumber());
 
         assert.equal(priceUSD,14692121690100 , "priceUSD");
+    })
+
+
+    it("manual transfer should work correct", async () => {
+        let TokenInstance = await Token.deployed();
+        let PresaleInstance = await Presale.deployed();
+        let WhiteListInstance = await WhiteList.deployed();
 
         try {
-            await PresaleInstance.manualTransfer(accounts[1], 1000,{from: accounts[1]})
+            await PresaleInstance.manualTransfer(accounts[1], 1000, { from: accounts[1] })
             assert.fail()
         } catch (error) {
             err = error
@@ -100,15 +104,17 @@ contract('TestPresale', function (accounts) {
         assert.ok(err instanceof Error)
         console.log(err)
 
-        await PresaleInstance.manualTransfer(accounts[1], 1000,{from: accounts[0]})
+        // manual transfer can be called only from owner or manager
+        // owner
+        await PresaleInstance.manualTransfer(accounts[1], 1000, { from: accounts[0] })
 
         let tokenBalance = await TokenInstance.balanceOf(accounts[1]);
         tokenBalance = tokenBalance.toNumber();
         console.log(tokenBalance)
 
-
         try {
-            await PresaleInstance.setManager(accounts[1],{from: accounts[1]})
+            // can be called only from owner of Presale
+            await PresaleInstance.setManager(accounts[1], { from: accounts[1] })
             assert.fail()
         } catch (error) {
             err = error
@@ -116,16 +122,21 @@ contract('TestPresale', function (accounts) {
         assert.ok(err instanceof Error)
         console.log(err)
 
-        await PresaleInstance.setManager(accounts[1],{from: accounts[0]})
+        await PresaleInstance.setManager(accounts[1],{ from: accounts[0] })
 
-        await PresaleInstance.manualTransfer(accounts[1], 1000,{from: accounts[1]})
+        // manual transfer can be called only from owner or manager
+        // manager
+
+        // send to yourself should work correct
+        await PresaleInstance.manualTransfer(accounts[1], 1000, { from: accounts[1] })
 
         tokenBalance = await TokenInstance.balanceOf(accounts[1]);
         tokenBalance = tokenBalance.toNumber();
         console.log(tokenBalance)
 
-
-        await PresaleInstance.manualTransfer(accounts[2], 1000,{from: accounts[1]})
+        // send to another contract should work correct
+        // from manager
+        await PresaleInstance.manualTransfer(accounts[2], 1000, { from: accounts[1] })
 
         tokenBalance = await TokenInstance.balanceOf(accounts[2]);
         tokenBalance = tokenBalance.toNumber();
@@ -133,6 +144,7 @@ contract('TestPresale', function (accounts) {
 
 
         try {
+            // from another contract
             await PresaleInstance.sendTransaction({ value: 1e+18, from: accounts[2] })
             assert.fail()
         } catch (error) {
@@ -142,7 +154,5 @@ contract('TestPresale', function (accounts) {
         console.log(err)
 
     })
-
-
-
+    
 })
