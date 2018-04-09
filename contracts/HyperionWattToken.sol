@@ -237,10 +237,17 @@ contract HyperionWattToken is MintableToken {
   string public constant symbol = "HWT";
 
   uint8 public constant decimals = 18;
+
   
   //Dividends allready claimed by Investor
   mapping (address=> uint256) public assuranvePayments; 
   uint256 totalAssuranvePayments ;
+
+
+  modifier crowdsaleOver() {
+    require(mintingFinished);
+    _;
+  }
   
   function increaseAssuranvePayments(address _investor,uint256 _amount ) onlyOwner public
   {
@@ -252,15 +259,18 @@ contract HyperionWattToken is MintableToken {
     assuranvePayments[_investor]-=_amount;
       
   }
+
+
   //When transfering tokens decrease assuranvePayments for sender and increase for reciever
-  function transfer(address _to, uint256 _value)public returns (bool){
+  function transfer(address _to, uint256 _value) crowdsaleOver public returns (bool){
     uint256 transferedClaims = assuranvePayments[msg.sender].mul(_value.div(balances[msg.sender]));
     assuranvePayments[msg.sender]-=transferedClaims;
     assuranvePayments[_to] += transferedClaims;
 
     return super.transfer(_to,_value);
-  } 
-  function tranferFrom(address _from, address _to, uint256 _value) public returns (bool){
+  }
+
+  function tranferFrom(address _from, address _to, uint256 _value) crowdsaleOver public returns (bool){
     uint256 transferedClaims = assuranvePayments[msg.sender].mul(_value.div(balances[msg.sender]));
     assuranvePayments[msg.sender]-=transferedClaims;
    assuranvePayments[_to] += transferedClaims;

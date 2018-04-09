@@ -21,7 +21,7 @@ contract WhiteList is Ownable {
     accreditedInvestor[_investor] = true;
   }
   
-  function addCrowdsaleManager(address _crowdsaleManager) onlyOwner {
+  function addCrowdsaleManager(address _crowdsaleManager) public onlyOwner {
     crowdsaleMangers[_crowdsaleManager] = true;
   }
 

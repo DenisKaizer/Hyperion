@@ -54,6 +54,8 @@ contract Presale is Ownable, ReentrancyGuard {
   // investors => amount of money
   mapping(address => uint) public balances;
   mapping(address => uint) public balancesInCent;
+  mapping(address=>uint) public claimedTokens;
+  mapping(address=>uint) public claimableTokens;
 
   /**
    * event for token purchase logging
@@ -112,6 +114,11 @@ contract Presale is Ownable, ReentrancyGuard {
     _;
   }
 
+  modifier CanClaimNow (){
+    require(now>endTime + 2592000);
+    _;
+  }
+
   // @return true if crowdsale event has ended
   function hasEnded() public view returns (bool) {
     return now > endTime;
@@ -150,6 +157,20 @@ contract Presale is Ownable, ReentrancyGuard {
     priceUSD = _priceUSD;
   }
 
+  function claimFreezedTokens(address claimer) public nonReentrant CanClaimNow {
+    uint256 periodsPassed = now.sub(endTime).div(2592000);
+    if (periodsPassed > 2) {
+      periodsPassed = 2;
+    }
+    uint256 availableTokens = (claimableTokens[msg.sender].mul(periodsPassed)).sub(claimedTokens[claimer]);
+    if (availableTokens + claimedTokens[claimer] > claimableTokens[claimer].mul(2)){
+      availableTokens = claimableTokens[claimer].mul(2) - claimedTokens[claimer];
+    }
+
+    claimedTokens[claimer] = claimedTokens[claimer].add(availableTokens);
+    token.transfer(claimer,availableTokens);
+  }
+
   // manual selling tokens for fiat
   function manualTransfer(address _to, uint _valueUSD) public saleIsOn isUnderHardCap onlyOwnerOrManager {
     uint256 centValue = _valueUSD * 100;
@@ -168,8 +189,10 @@ contract Presale is Ownable, ReentrancyGuard {
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokens = getTokenAmount(centValue);
     tokens = tokens.add(tokens.mul(25).div(100));
-   
-    token.mint(beneficiary, tokens);
+    uint256 tokensToSend = tokens.div(2); // 50% right now
+    token.mint(beneficiary, tokensToSend); // mint 50% to beneficiary
+    claimableTokens[msg.sender] += tokens.div(4); // save 25% as "claimableTokens"
+    token.mint(this, tokens.div(2)); // mint 50% for "this", it should be claimed after 2 month's
     balances[msg.sender] = balances[msg.sender].add(weiAmount);
     TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
     forwardFunds(weiAmount);

@@ -109,6 +109,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     _;
   }
 
+
   modifier isUnderHardCap() {
     require(token.totalSupply() <= hardCap);
     _;
@@ -125,7 +126,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   }
 
   modifier CanClaimNow (){
-      require(now>endTime + 7776000);
+      require(now>endTime + 2592000);
       _;
   }
   // @return true if crowdsale event has ended
@@ -158,7 +159,9 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     require(centRaised > softCap);
     forwardFunds(this.balance);
     token.mint(foundersWallet,token.totalSupply().div(65).mul(35));
+    token.finishMinting();
     token.transferOwnership(owner);
+
     endTime = now;
   }
 
@@ -188,18 +191,18 @@ function getCurrentRate() public view returns (uint256) {
   }
 
   //TODO add checks if its allowed
-  function claimFreezedTokens() public nonReentrant CanClaimNow {
-    uint256 periodsPassed = now.sub(endTime).div(7776000);
+  function claimFreezedTokens(address claimer) public nonReentrant CanClaimNow {
+    uint256 periodsPassed = now.sub(endTime).div(2592000);
     if (periodsPassed > 3) {
       periodsPassed = 3;
     }
-    uint256 availableTokens = (claimableTokens[msg.sender].mul(periodsPassed)).sub(claimedTokens[msg.sender]);
-    if (availableTokens + claimedTokens[msg.sender] > claimableTokens[msg.sender].mul(3)){
-      availableTokens = claimableTokens[msg.sender].mul(3) - claimedTokens[msg.sender];
+    uint256 availableTokens = (claimableTokens[msg.sender].mul(periodsPassed)).sub(claimedTokens[claimer]);
+    if (availableTokens + claimedTokens[claimer] > claimableTokens[claimer].mul(3)){
+      availableTokens = claimableTokens[claimer].mul(3) - claimedTokens[claimer];
     }
 
-    claimedTokens[msg.sender] = claimedTokens[msg.sender].add(availableTokens);
-    token.transfer(msg.sender,availableTokens);
+    claimedTokens[claimer] = claimedTokens[claimer].add(availableTokens);
+    token.transfer(claimer,availableTokens);
   }
 
   // manual selling tokens for fiat
