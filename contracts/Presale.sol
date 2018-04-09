@@ -86,7 +86,7 @@ contract Presale is Ownable, ReentrancyGuard {
     wallet = _wallet;
     token = HyperionWattToken(_token);
     whiteList = WhiteList(_whitelist);
-    hardCap = 154000000 * 1 ether; // inTokens
+    hardCap = 100000000 * 1 ether; // inTokens
     
   }
 
@@ -179,6 +179,7 @@ contract Presale is Ownable, ReentrancyGuard {
     buyTokens(msg.sender);
   }
 }
+
 
 
 
