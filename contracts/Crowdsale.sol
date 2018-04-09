@@ -51,6 +51,8 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 
   uint256 public hardCap;
   uint256 public softCap;
+  uint256 public initialRate;
+  uint256 public finalRate;
 
   address oracle; //
   address manager;
@@ -96,6 +98,8 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     hardCap = 100000000 * 1 ether; // inTokens
     softCap =  500000000; //in Cents
     whiteList = WhiteList(_whitelist);
+    initialRate = 64; // in Cents
+    finalRate = 110; 
   }
 
   // @return true if the transaction can buy tokens
@@ -176,6 +180,12 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     priceUSD = _priceUSD;
   }
 
+function getCurrentRate() public view returns (uint256) {
+    uint256 elapsedTime = block.timestamp.sub(startTime);
+    uint256 timeRange = endTime.sub(startTime);
+    uint256 rateRange = initialRate.sub(finalRate);
+    return initialRate.sub(elapsedTime.mul(rateRange).div(timeRange));
+  }
 
   //TODO add checks if its allowed
   function claimFreezedTokens() public nonReentrant CanClaimNow {
