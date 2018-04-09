@@ -43,16 +43,12 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 
 
   // how many token units a buyer gets per wei
-  uint256 public rate; // tokens for one cent
-
   uint256 public priceUSD; // wei in one cent USD
 
   uint256 public centRaised;
 
   uint256 public hardCap;
   uint256 public softCap;
-  uint256 public initialRate;
-  uint256 public finalRate;
 
   address oracle; //
   address manager;
@@ -62,6 +58,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   mapping(address => uint) public balancesInCent;
   mapping(address=>uint) public claimedTokens;
   mapping(address=>uint) public claimableTokens;
+  //mapping (uint256=>uint256) public rates;
+
+  uint256 public initialRate;
+  uint256 public finalRate;
 
   /**
    * event for token purchase logging
@@ -91,15 +91,28 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     startTime = _startTime;
     endTime = startTime + _period * 1 days;
     priceUSD = _priceUSD;
-    rate = 16666670000000000; // 0.01666667 * 1 ether
+    //rate =  16666670000000000; // 0.01666667 * 1 ether
     wallet = _wallet;
     foundersWallet = _foundersWallet;
     token = HyperionWattToken(_token);
     hardCap = 100000000 * 1 ether; // inTokens
     softCap =  500000000; //in Cents
     whiteList = WhiteList(_whitelist);
-    initialRate = 64; // in Cents
-    finalRate = 110; 
+    initialRate = 15625000000000000;
+    finalRate = 11904760000000000;
+
+
+    /**
+    rates[startTime + 1 days] = 15625000000000000;
+    rates[startTime + 2 days] = 15625000000000000;
+    rates[startTime + 3 days] = 14492750000000000;
+    rates[startTime + 4 days] = 14492750000000000;
+    rates[startTime + 5 days] = 13513510000000000;
+    rates[startTime + 6 days] = 13513510000000000;
+    rates[startTime + 7 days] = 12658230000000000;
+    rates[startTime + 8 days] = 12658230000000000;
+    rates[startTime + 9 days] = 11904760000000000;
+    */
   }
 
   // @return true if the transaction can buy tokens
@@ -146,7 +159,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
   }
   // Override this method to have a way to add business logic to your crowdsale when buying
   function getTokenAmount(uint256 centValue) internal view returns(uint256) {
-    return centValue.mul(rate);
+    return centValue.mul(getCurrentRate());
   }
 
   // send ether to the fund collection wallet
@@ -161,7 +174,6 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     token.mint(foundersWallet,token.totalSupply().div(65).mul(35));
     token.finishMinting();
     token.transferOwnership(owner);
-
     endTime = now;
   }
 
@@ -183,12 +195,29 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     priceUSD = _priceUSD;
   }
 
-function getCurrentRate() public view returns (uint256) {
-    uint256 elapsedTime = block.timestamp.sub(startTime);
-    uint256 timeRange = endTime.sub(startTime);
+  function getCurrentRate() public view returns (uint256) {
+    uint256 elapsedTime = block.timestamp.sub(startTime).div(1 days);
+    uint256 timeRange = 10;
     uint256 rateRange = initialRate.sub(finalRate);
-    return initialRate.sub(elapsedTime.mul(rateRange).div(timeRange));
+    uint256 currentRange = initialRate.sub(elapsedTime.mul(rateRange).div(timeRange));
+    if (elapsedTime >= 10) {
+      currentRange = finalRate;
+    }
+
+    /**
+    if (elapsedTime >= 10) {
+      currentRange = finalRate;
+    }
+    else {
+      currentRange = rates[elapsedTime];
+    }
+    */
+    return currentRange;
   }
+
+
+
+
 
   //TODO add checks if its allowed
   function claimFreezedTokens(address claimer) public nonReentrant CanClaimNow {
