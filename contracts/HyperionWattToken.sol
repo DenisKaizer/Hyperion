@@ -241,7 +241,7 @@ contract HyperionWattToken is MintableToken {
   
   //Dividends allready claimed by Investor
   mapping (address=> uint256) public assuranvePayments; 
-  uint256 totalAssuranvePayments ;
+  uint256 public totalAssuranvePayments ;
 
 
   modifier crowdsaleOver() {
