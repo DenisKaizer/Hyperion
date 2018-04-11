@@ -181,7 +181,7 @@ contract Presale is Ownable, ReentrancyGuard {
     claimableTokens[_to] += tokens.div(4); // save 25% as "claimableTokens"
     token.mint(this, tokens.div(2));
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
-    forwardFunds(msg.value);
+    
   }
 
   // low level token purchase function
