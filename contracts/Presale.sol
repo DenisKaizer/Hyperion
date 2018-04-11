@@ -174,11 +174,14 @@ contract Presale is Ownable, ReentrancyGuard {
   // manual selling tokens for fiat
   function manualTransfer(address _to, uint _valueUSD) public saleIsOn isUnderHardCap onlyOwnerOrManager {
     uint256 centValue = _valueUSD * 100;
-    uint256 tokensAmount = getTokenAmount(centValue);
-    tokensAmount = tokensAmount.add(tokensAmount.mul(25).div(100));
-    
-    token.mint(_to, tokensAmount);
+    uint256 tokens = getTokenAmount(centValue);
+   
+    uint256 tokensToSend = tokens.div(2); // 50% right now
+    token.mint(_to, tokensToSend); // mint 50% to beneficiary 
+    claimableTokens[_to] += tokens.div(4); // save 25% as "claimableTokens"
+    token.mint(this, tokens.div(2));
     balancesInCent[_to] = balancesInCent[_to].add(centValue);
+    forwardFunds(msg.value);
   }
 
   // low level token purchase function
@@ -188,7 +191,7 @@ contract Presale is Ownable, ReentrancyGuard {
     uint256 weiAmount = msg.value;
     uint256 centValue = weiAmount.div(priceUSD);
     uint256 tokens = getTokenAmount(centValue);
-    tokens = tokens.add(tokens.mul(25).div(100));
+    
     uint256 tokensToSend = tokens.div(2); // 50% right now
     token.mint(beneficiary, tokensToSend); // mint 50% to beneficiary
     claimableTokens[msg.sender] += tokens.div(4); // save 25% as "claimableTokens"
