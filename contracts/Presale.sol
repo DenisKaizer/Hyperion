@@ -173,7 +173,7 @@ contract Presale is Ownable, ReentrancyGuard {
 
   // manual selling tokens for fiat
   function manualTransfer(address _to, uint _valueUSD) public saleIsOn isUnderHardCap onlyOwnerOrManager {
-    uint256 centValue = _valueUSD * 100;
+    uint256 centValue = _valueUSD;
     uint256 tokens = getTokenAmount(centValue);
    
     uint256 tokensToSend = tokens.div(2); // 50% right now
